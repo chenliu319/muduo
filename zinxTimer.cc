@@ -8,7 +8,7 @@ public:
     google::protobuf::Message *pMsg = nullptr;
     enum MSG_TYPE
     {
-        //玩家上线
+        //玩家上线id和玩家姓名
         MSG_TYPE_LOGIN_ID_NAME = 1,
         //聊天内容
         MSG_TYPE_CHAT_CONTENT = 2,
@@ -40,11 +40,55 @@ gameMsg::gameMsg(MSG_TYPE _type,google::protobuf::Message* _pMsg)
 
 }
 
-//将字节流内容转换成消息结构
+//将字节流内容（_stream）转换成消息结构
 gameMsg::gameMsg(MSG_TYPE _type,std::string _stream)
+	:enMsgType(_type)
 {
-
+	//通过简单工厂构造具体的消息对象
+	switch (_type)
+	{
+		case MSG_TYPE_LOGIN_ID_NAME:
+			// 玩家上线id和玩家姓名
+			pMsg = new pb::syncPid();
+			break;
+		case MSG_TYPE_CHAT_CONTENT:
+			// 聊天内容
+			pMsg = new pb::talk();
+			break;
+		case MSG_TYPE_NEW_POSTION:
+			// 玩家新位置
+			pMsg = new pb::position();
+			break;
+		case MSG_TYPE_BROADCAST:
+			// 广播
+			pMsg = new pb::broadCast();
+			break;
+		case MSG_TYPE_LOGIN_OFF:
+			// 玩家下线
+			pMsg = new pb::syncPid();
+			break;
+		case MSG_TYPE_SRD_POSTION:
+			// 周围玩家位置
+			pMsg = new pb::syncPlayers();
+			break;
+		default:
+			// 未知类型
+			break;
+	}
+	
+	//将字符串 _stream 里的内容反序列化（解析）出一个 protobuf 消息对象，并把解析结果存到 pMsg 指向的对象里。
+	pMsg->ParseFromString(_stream);
 }
+
+//序列化消息
+std::string gameMsg::serialize()
+{
+	std::string out;
+	//将pMsg 指向的 protobuf 消息对象序列化为字符串并将序列化后的字符串存入out
+	pMsg->SerializeToString(&out);
+	return out;
+}
+
 
 
 msg.proto
@@ -95,6 +139,7 @@ message movePackege
 	int32 actionData = 2;
 }
 
+//向外发的广播请求
 message broadCast
 {
 	int32 pid=1;
@@ -109,4 +154,10 @@ message broadCast
 		int32 actionData=5;
 	}
 	string username=6;
+}
+
+//聊天消息
+message talk
+{
+	string content = 1;
 }
