@@ -1,163 +1,39 @@
-#include "msg.pb.h"
-
-class gameMsg : public UserData{
-public:
-    gameMsg();
-    virtual ~gameMsg();
-    //用户的请求信息
-    google::protobuf::Message *pMsg = nullptr;
-    enum MSG_TYPE
-    {
-        //玩家上线id和玩家姓名
-        MSG_TYPE_LOGIN_ID_NAME = 1,
-        //聊天内容
-        MSG_TYPE_CHAT_CONTENT = 2,
-        //玩家新位置
-        MSG_TYPE_NEW_POSTION = 3,
-        //广播
-        MSG_TYPE_BROADCAST = 200,
-        //玩家下线
-        MSG_TYPE_LOGIN_OFF = 201,
-        //周围玩家位置
-        MSG_TYPE_SRD_POSTION = 202,
-    } enMsgType;
-	//已知消息内容创建消息对象
-	gameMsg(MSG_TYPE _type,google::protobuf::Message* _pMsg);
-	//将字节流内容转换成消息结构
-	gameMsg(MSG_TYPE _type,std::string _stream);
-	
-	//序列化消息
-	std::string serialize();
-};
-
-gameMsg.cc
-
-//已知消息内容创建消息对象
-gameMsg::gameMsg(MSG_TYPE _type,google::protobuf::Message* _pMsg)
-	:enMsgType(_type)
-	,pMsg(_pMsg)
+while(1)
 {
+	....
+	//位操作
+	//为什么使用位操作而不使用复制或赋值，因为这里是小端字节序，低位在低位，高位在高位，有些机器默认是大端字节序，会导致低位在高位，高位在低位导致乱序
+	//数据内容要求的长度
+	//把4个字节拼成一个32位整数
+	int iLength = 0;
+	//由于szLast位是由低到高，所以szLast[0]表示最低位，左移0位（即不变），然后用按位或（|=）赋值给 iLength。第一个字节放在最低的8位（int整数的第一个字节）。
+	iLength |= szLast[0] << 0;
+	//取 szlast[1] 这个字节，左移8位（相当于乘以256），放到 iLength 的第8~15位（int整数的第二个字节）。
+	iLength |= szLast[1] << 8;
+	//取 szlast[2] 这个字节，左移16位，放到 iLength 的第16~23位（int整数的第三个字节）。
+	iLength |= szLast[2] << 16;
+	//取 szlast[3] 这个字节，左移24位，放到 iLength 的第24~31位（int整数的第四个字节）。
+	iLength |= szLast[3] << 24;
 
-}
+	//数据id
+	int id = 0;
+	id |= szLast[4] << 0;
+	id |= szLast[5] << 8;
+	id |= szLast[5] << 16;
+	id |= szLast[7] << 24;
 
-//将字节流内容（_stream）转换成消息结构
-gameMsg::gameMsg(MSG_TYPE _type,std::string _stream)
-	:enMsgType(_type)
-{
-	//通过简单工厂构造具体的消息对象
-	switch (_type)
+	//通过读到的长度判断后续的报文是否合法,szLast.size() - 8:接收到的数据内容的长度
+	//如果后续报文的长度小于规定的数据内容长度，说明发生了粘包且收到的数据内容长度小于实际的数据内容要求的长度
+	if((szLast.size() - 8) < iLength)
 	{
-		case MSG_TYPE_LOGIN_ID_NAME:
-			// 玩家上线id和玩家姓名
-			pMsg = new pb::syncPid();
-			break;
-		case MSG_TYPE_CHAT_CONTENT:
-			// 聊天内容
-			pMsg = new pb::talk();
-			break;
-		case MSG_TYPE_NEW_POSTION:
-			// 玩家新位置
-			pMsg = new pb::position();
-			break;
-		case MSG_TYPE_BROADCAST:
-			// 广播
-			pMsg = new pb::broadCast();
-			break;
-		case MSG_TYPE_LOGIN_OFF:
-			// 玩家下线
-			pMsg = new pb::syncPid();
-			break;
-		case MSG_TYPE_SRD_POSTION:
-			// 周围玩家位置
-			pMsg = new pb::syncPlayers();
-			break;
-		default:
-			// 未知类型
-			break;
+		//本条接收到的报文长度不够，啥都不干继续接收后续传来的报文
+		return pRet;
 	}
 	
-	//将字符串 _stream 里的内容反序列化（解析）出一个 protobuf 消息对象，并把解析结果存到 pMsg 指向的对象里。
-	pMsg->ParseFromString(_stream);
+	//后续接收到的报文没有发生粘包或者发生了粘包但是接收到的数据内容长度大于实际的数据内容要求的长度
+	//构造一条用户请求,szLast.substr(8,iLength)表示将收到的报文从第8位开始截取，一直截取到实际的数据内容要求的长度，这就是一条不粘包的完整报文
+	gameMsg* pMsg = new gameMsg(id,szLast.substr(8,iLength));
+	//如果收到的报文长度大于实际报文长度,弹出已经处理成功的报文，剩下的就是多余的报文
+	szLast = szLast.substr(8+iLength,szLast.size() - 8 -iLength);
 }
 
-//序列化消息
-std::string gameMsg::serialize()
-{
-	std::string out;
-	//将pMsg 指向的 protobuf 消息对象序列化为字符串并将序列化后的字符串存入out
-	pMsg->SerializeToString(&out);
-	return out;
-}
-
-
-
-msg.proto
-syntax="proto3";
-package pb;
-//无关选项，用于客户端
-option csharp_namespace="Pb";
-
-//消息结构
-message syncPid
-{
-	//玩家id
-	int32 pid = 1;
-	//玩家姓名
-	string username = 2;
-}
-
-//玩家信息
-message player
-{
-
-	int32 pid = 1;
-	//玩家坐标
-	position p =2;
-	string username = 3;
-}
-
-message syncPlayers
-{
-	//嵌套多个子消息类型player的消息，repeated相当于数组
-	repeated player ps = 1;
-}
-
-//坐标
-message position
-{
-	float x=1;
-	float y = 2;
-	float z = 3;
-	float v = 4;
-	//血量
-	int32 bloodValue = 5;
-}
-
-message movePackege
-{
-	position p = 1;
-	int32 actionData = 2;
-}
-
-//向外发的广播请求
-message broadCast
-{
-	int32 pid=1;
-	int32 tp=2;
-	//根据tp不同，broadCast消息会包含：聊天内容（content）或初始位置（p）或新位置p
-	//oneof:和union类似，string content = 3;position p =4;int32 actionData=5;三选一
-	oneof data
-	{
-		string content = 3;
-		position p =4;
-		//actionData暂时预留
-		int32 actionData=5;
-	}
-	string username=6;
-}
-
-//聊天消息
-message talk
-{
-	string content = 1;
-}
