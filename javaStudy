@@ -1,0 +1,139 @@
+this的本质：方法调用者的地址
+
+常用方法
+
+构造方法
+StringBuilder sb = new StringBuilder(); // 空构造
+StringBuilder sb2 = new StringBuilder("Hello"); // 以初始字符串构造
+StringBuilder sb3 = new StringBuilder(100); // 指定初始容量
+
+2. append(…)
+追加内容到末尾（可以是字符串、字符、数字等各种类型）
+支持链式调用
+sb.append("World");
+sb.append('!');
+sb.append(123);
+
+3. insert(int offset, …)
+在指定位置插入内容
+sb.insert(5, "Java"); // 在第5个字符后插入"Java"
+
+4. delete(int start, int end)
+删除指定区间的内容（左闭右开）
+sb.delete(5, 9); // 删除第5到第8个字符
+
+5. deleteCharAt(int index)
+删除指定位置的单个字符
+sb.deleteCharAt(0); // 删除第一个字符
+
+6. replace(int start, int end, String str)
+替换指定区间的内容为新字符串
+sb.replace(0, 5, "Hi"); // 把第0到第4个字符替换为"Hi"
+
+7. reverse()
+反转字符串内容
+sb.reverse();
+
+8. toString()
+转为不可变的字符串
+String result = sb.toString();
+
+9. setCharAt(int index, char ch)
+设置指定位置的字符
+sb.setCharAt(0, 'h');
+
+10. length()
+获取当前内容长度
+int len = sb.length();
+
+11. capacity()
+获取当前容量（不是内容长度）
+int cap = sb.capacity();
+
+
+StringBuilder sb = new StringBuilder("abc");
+
+//添加元素
+//sb.append(1);
+//sb.append(2.3);
+//sb.append(true);
+
+//反转
+//sb.reverse();
+
+//toString()
+//虽然能打印出abcaaabbbccc,但是不能把他当成是字符串用
+sb.append("aaa");
+sb.append("bbb");
+sb.append("ccc");
+//将StringBuilder转为字符串
+String str = sb.toString();
+//此时str就是一个字符串了
+
+/*StringJoiner*/
+StringJoiner和StringBuilder一样，也可以看成是一个容器，创建之后里面的容器是可变的
+作用：提高字符串的操作效率，而且代码编写特别简洁，但是目前市场上很少有人用
+StringJoiner没有无参构造，只有有参构造
+public StringJoiner(间隔符号)		创建一个StringJoiner对象，指定拼接时的间隔符号
+public StringJoiner(间隔符号,开始符号,结束符号)		创建一个StringJoiner对象，指定拼接时的间隔符号，开始符号，结束符号
+
+常用方法
+
+构造方法
+// 只指定分隔符
+StringJoiner joiner = new StringJoiner(","); // 逗号分隔
+
+// 指定分隔符、前缀、后缀
+StringJoiner joiner2 = new StringJoiner(",", "[", "]"); // 结果如：[a,b,c]
+
+add(String element)
+添加一个元素到 joiner 中
+可以链式调用
+joiner.add("apple").add("banana").add("orange");
+
+toString()
+返回拼接后的字符串
+String result = joiner.toString(); // "apple,banana,orange"
+
+length()
+返回当前拼接字符串的长度
+int len = joiner.length();
+
+setEmptyValue(String emptyValue)
+设置当没有任何元素时，toString() 返回的内容（默认是空字符串）
+StringJoiner joiner = new StringJoiner(",", "[", "]");
+joiner.setEmptyValue("empty");
+System.out.println(joiner.toString()); // 输出 "empty"
+
+merge(StringJoiner other)
+把另一个 StringJoiner 的内容合并进来（分隔符必须一致）
+StringJoiner joiner1 = new StringJoiner(",");
+joiner1.add("a").add("b");
+
+StringJoiner joiner2 = new StringJoiner(",");
+joiner2.add("c").add("d");
+
+joiner1.merge(joiner2); // joiner1 变成 "a,b,c,d"
+
+字符串拼接的底层原理
+在jdk8以前
+1. 使用“+”拼接字符串
+String s = "a" + "b" + "c";
+编译器优化
+如果拼接的内容都是常量，编译器会在编译期直接合并，变成：
+String s = "abc";
+如果拼接的内容有变量，比如：
+String a = "a";
+String b = a + "b";
+String s = b + "c";
+编译器会把它转换为：
+StringBuilder sb1 = new StringBuilder();
+sb1.append(b); ==》 ab
+sb1.toString();
+StringBuilder sb2 = new StringBuilder();
+sb2.append(c);==>abc
+sb2.toString();
+
+String s = sb.toString();
+也就是说，JDK8之前，字符串拼接“+”操作，底层会被编译器自动转成StringBuilder的append操作。在转成StringBuilder进行append完成后，又会调用toString将append后的字符串转为string返回
+而在底层调用toString则会new一个新的string对象，也就是说，每使用一个变量拼接，底层都会new一个StringBuilder，而在append完成后又会new一个String对象,这样每有一个变量拼接堆中就会多一个StringBuilder对象和String对象，这样很耗费内存
