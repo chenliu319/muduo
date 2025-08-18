@@ -1,139 +1,94 @@
-this的本质：方法调用者的地址
+java只支持单继承，不支持多继承，但支持多层继承
+为什么java只支持单继承，但在c++中是支持多继承的，避免菱形继承，c++中可以定义虚基类来解决菱形继承，但是java中没有指针这个概念，所以不支持多继承
 
-常用方法
+子类能继承父类中的哪些内容
+		构造方法		成员变量		成员方法
+private 不能			能				不能
 
-构造方法
-StringBuilder sb = new StringBuilder(); // 空构造
-StringBuilder sb2 = new StringBuilder("Hello"); // 以初始字符串构造
-StringBuilder sb3 = new StringBuilder(100); // 指定初始容量
+public	不能			能				能
+子类虽然能继承父类私有的成员变量，但是却不能调用
 
-2. append(…)
-追加内容到末尾（可以是字符串、字符、数字等各种类型）
-支持链式调用
-sb.append("World");
-sb.append('!');
-sb.append(123);
+super关键字
+当子类和父类有同名的成员变量或方法时，使用 super 可以访问父类的版本。
+class Parent {
+    int value = 10;
+    void show() {
+        System.out.println("Parent show");
+    }
+}
 
-3. insert(int offset, …)
-在指定位置插入内容
-sb.insert(5, "Java"); // 在第5个字符后插入"Java"
+class Child extends Parent {
+    int value = 20;
+    void show() {
+        System.out.println("Child show");
+    }
+    void print() {
+        System.out.println(super.value); // 输出 10，访问父类的 value
+        super.show(); // 调用父类的 show 方法
+    }
+}
+在子类构造方法中，可以用 super(...) 调用父类的构造方法，必须是构造方法的第一行。
+class Parent {
+    Parent(int x) {
+        System.out.println("Parent constructor: " + x);
+    }
+}
 
-4. delete(int start, int end)
-删除指定区间的内容（左闭右开）
-sb.delete(5, 9); // 删除第5到第8个字符
+class Child extends Parent {
+    Child(int x, int y) {
+        super(x); // 调用父类构造方法
+        System.out.println("Child constructor: " + y);
+    }
+}
+当子类和父类有同名成员时，super 可以明确表示访问的是父类的成员，而不是子类自己的成员。
+总结
+super 用于访问父类的成员变量和方法。
+super(...) 用于调用父类的构造方法。
+解决子类和父类成员重名时的歧义。
 
-5. deleteCharAt(int index)
-删除指定位置的单个字符
-sb.deleteCharAt(0); // 删除第一个字符
+多态
+指的是同一个接口或父类引用，在不同的实际对象上表现出不同的行为。
+多态简单来说就是：父类引用指向子类对象，通过该引用调用方法时，会根据实际对象类型执行对应的方法。
+class Animal {
+    void speak() {
+        System.out.println("Animal speaks");
+    }
+}
 
-6. replace(int start, int end, String str)
-替换指定区间的内容为新字符串
-sb.replace(0, 5, "Hi"); // 把第0到第4个字符替换为"Hi"
+class Dog extends Animal {
+    void speak() {
+        System.out.println("Dog barks");
+    }
+}
 
-7. reverse()
-反转字符串内容
-sb.reverse();
+class Cat extends Animal {
+    void speak() {
+        System.out.println("Cat meows");
+    }
+}
 
-8. toString()
-转为不可变的字符串
-String result = sb.toString();
+public class Test {
+    public static void main(String[] args) {
+        Animal a1 = new Dog();
+        Animal a2 = new Cat();
 
-9. setCharAt(int index, char ch)
-设置指定位置的字符
-sb.setCharAt(0, 'h');
+        a1.speak(); // 输出 Dog barks
+        a2.speak(); // 输出 Cat meows
+    }
+}
+这里，虽然 a1 和 a2 的类型都是 Animal，但实际调用的是 Dog 和 Cat 的 speak 方法，这就是多态。
 
-10. length()
-获取当前内容长度
-int len = sb.length();
+实现多态的前提
+Java 实现多态需要满足以下几个条件：
+	
+继承（Inheritance）
+必须有父类和子类（或接口和实现类）的继承关系。
 
-11. capacity()
-获取当前容量（不是内容长度）
-int cap = sb.capacity();
+方法重写（Override）
+子类必须重写父类的方法（即方法名、参数列表都一样，返回值兼容）。
 
+父类引用指向子类对象
+必须用父类类型的引用指向子类对象，例如：Animal a = new Dog();
 
-StringBuilder sb = new StringBuilder("abc");
-
-//添加元素
-//sb.append(1);
-//sb.append(2.3);
-//sb.append(true);
-
-//反转
-//sb.reverse();
-
-//toString()
-//虽然能打印出abcaaabbbccc,但是不能把他当成是字符串用
-sb.append("aaa");
-sb.append("bbb");
-sb.append("ccc");
-//将StringBuilder转为字符串
-String str = sb.toString();
-//此时str就是一个字符串了
-
-/*StringJoiner*/
-StringJoiner和StringBuilder一样，也可以看成是一个容器，创建之后里面的容器是可变的
-作用：提高字符串的操作效率，而且代码编写特别简洁，但是目前市场上很少有人用
-StringJoiner没有无参构造，只有有参构造
-public StringJoiner(间隔符号)		创建一个StringJoiner对象，指定拼接时的间隔符号
-public StringJoiner(间隔符号,开始符号,结束符号)		创建一个StringJoiner对象，指定拼接时的间隔符号，开始符号，结束符号
-
-常用方法
-
-构造方法
-// 只指定分隔符
-StringJoiner joiner = new StringJoiner(","); // 逗号分隔
-
-// 指定分隔符、前缀、后缀
-StringJoiner joiner2 = new StringJoiner(",", "[", "]"); // 结果如：[a,b,c]
-
-add(String element)
-添加一个元素到 joiner 中
-可以链式调用
-joiner.add("apple").add("banana").add("orange");
-
-toString()
-返回拼接后的字符串
-String result = joiner.toString(); // "apple,banana,orange"
-
-length()
-返回当前拼接字符串的长度
-int len = joiner.length();
-
-setEmptyValue(String emptyValue)
-设置当没有任何元素时，toString() 返回的内容（默认是空字符串）
-StringJoiner joiner = new StringJoiner(",", "[", "]");
-joiner.setEmptyValue("empty");
-System.out.println(joiner.toString()); // 输出 "empty"
-
-merge(StringJoiner other)
-把另一个 StringJoiner 的内容合并进来（分隔符必须一致）
-StringJoiner joiner1 = new StringJoiner(",");
-joiner1.add("a").add("b");
-
-StringJoiner joiner2 = new StringJoiner(",");
-joiner2.add("c").add("d");
-
-joiner1.merge(joiner2); // joiner1 变成 "a,b,c,d"
-
-字符串拼接的底层原理
-在jdk8以前
-1. 使用“+”拼接字符串
-String s = "a" + "b" + "c";
-编译器优化
-如果拼接的内容都是常量，编译器会在编译期直接合并，变成：
-String s = "abc";
-如果拼接的内容有变量，比如：
-String a = "a";
-String b = a + "b";
-String s = b + "c";
-编译器会把它转换为：
-StringBuilder sb1 = new StringBuilder();
-sb1.append(b); ==》 ab
-sb1.toString();
-StringBuilder sb2 = new StringBuilder();
-sb2.append(c);==>abc
-sb2.toString();
-
-String s = sb.toString();
-也就是说，JDK8之前，字符串拼接“+”操作，底层会被编译器自动转成StringBuilder的append操作。在转成StringBuilder进行append完成后，又会调用toString将append后的字符串转为string返回
-而在底层调用toString则会new一个新的string对象，也就是说，每使用一个变量拼接，底层都会new一个StringBuilder，而在append完成后又会new一个String对象,这样每有一个变量拼接堆中就会多一个StringBuilder对象和String对象，这样很耗费内存
+方法调用时表现出不同的行为
+通过父类引用调用被重写的方法时，实际执行的是子类的方法（即“动态绑定”）。
