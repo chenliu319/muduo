@@ -1,94 +1,34 @@
-java只支持单继承，不支持多继承，但支持多层继承
-为什么java只支持单继承，但在c++中是支持多继承的，避免菱形继承，c++中可以定义虚基类来解决菱形继承，但是java中没有指针这个概念，所以不支持多继承
+JDK7的时间类
+Date时间类
+利用空参构造创建的对象，默认表示系统当前时间
+Date d = new Date();
 
-子类能继承父类中的哪些内容
-		构造方法		成员变量		成员方法
-private 不能			能				不能
+利用有参构造创建的对象，表示指定的时间
+Date d = new Date(0L);//从时间原点开始(1970/1/1 8:00:00)经过0ms后的时间
 
-public	不能			能				能
-子类虽然能继承父类私有的成员变量，但是却不能调用
+setTime 修改时间
+d.setTime(1000L);//从时间原点开始(1970/1/1)经过1000ms后的时间
 
-super关键字
-当子类和父类有同名的成员变量或方法时，使用 super 可以访问父类的版本。
-class Parent {
-    int value = 10;
-    void show() {
-        System.out.println("Parent show");
-    }
-}
+getTime 获取当前时间的毫秒值
+d.getTime();
 
-class Child extends Parent {
-    int value = 20;
-    void show() {
-        System.out.println("Child show");
-    }
-    void print() {
-        System.out.println(super.value); // 输出 10，访问父类的 value
-        super.show(); // 调用父类的 show 方法
-    }
-}
-在子类构造方法中，可以用 super(...) 调用父类的构造方法，必须是构造方法的第一行。
-class Parent {
-    Parent(int x) {
-        System.out.println("Parent constructor: " + x);
-    }
-}
 
-class Child extends Parent {
-    Child(int x, int y) {
-        super(x); // 调用父类构造方法
-        System.out.println("Child constructor: " + y);
-    }
-}
-当子类和父类有同名成员时，super 可以明确表示访问的是父类的成员，而不是子类自己的成员。
-总结
-super 用于访问父类的成员变量和方法。
-super(...) 用于调用父类的构造方法。
-解决子类和父类成员重名时的歧义。
 
-多态
-指的是同一个接口或父类引用，在不同的实际对象上表现出不同的行为。
-多态简单来说就是：父类引用指向子类对象，通过该引用调用方法时，会根据实际对象类型执行对应的方法。
-class Animal {
-    void speak() {
-        System.out.println("Animal speaks");
-    }
-}
+SimpleDateFormat
+把时间变成我们喜欢的格式
+把字符串表示的时间变成Date对象
 
-class Dog extends Animal {
-    void speak() {
-        System.out.println("Dog barks");
-    }
-}
+public SimpleDateFormat()		构造一个SimpleDateFormat，使用默认格式YYYY/MM/dd HH:mm:ss
+public SimpleDateFormat(String pattern)		构造一个SimpleDateFormat，使用指定的格式
 
-class Cat extends Animal {
-    void speak() {
-        System.out.println("Cat meows");
-    }
-}
+常用方法
+public final String format(Date date)		序列化(日期对象->字符串)
+public Date parse(String source)			反序列化（字符串->日期对象）
+年月日时分秒	Y M d H m s  星期：EE
 
-public class Test {
-    public static void main(String[] args) {
-        Animal a1 = new Dog();
-        Animal a2 = new Cat();
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+Date d = new Date();
+sdf.format(d).sout;
 
-        a1.speak(); // 输出 Dog barks
-        a2.speak(); // 输出 Cat meows
-    }
-}
-这里，虽然 a1 和 a2 的类型都是 Animal，但实际调用的是 Dog 和 Cat 的 speak 方法，这就是多态。
-
-实现多态的前提
-Java 实现多态需要满足以下几个条件：
-	
-继承（Inheritance）
-必须有父类和子类（或接口和实现类）的继承关系。
-
-方法重写（Override）
-子类必须重写父类的方法（即方法名、参数列表都一样，返回值兼容）。
-
-父类引用指向子类对象
-必须用父类类型的引用指向子类对象，例如：Animal a = new Dog();
-
-方法调用时表现出不同的行为
-通过父类引用调用被重写的方法时，实际执行的是子类的方法（即“动态绑定”）。
+JDK8新增的时间相关类
+与JDK7相比代码简单，对于日期对象的计算和比较不需要再转换成毫秒来计算，JDK7多线程环境下会导致数据安全问题，JDK8时间日期对象都是不可变的，解决了这个问题
