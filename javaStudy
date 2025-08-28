@@ -1,34 +1,36 @@
-JDK7的时间类
-Date时间类
-利用空参构造创建的对象，默认表示系统当前时间
-Date d = new Date();
+在JDK5提出了一个机制，自动装箱和自动拆箱
+自动装箱：把基本数据类型会自动变成其对应的包装类
+自动拆箱：把包装类自动变成其对应的基本数据类型
 
-利用有参构造创建的对象，表示指定的时间
-Date d = new Date(0L);//从时间原点开始(1970/1/1 8:00:00)经过0ms后的时间
+在底层，此时会去自动调用静态方法valueOf得到一个Integer对象
+Integer i = 10;
+int i2 = i;
+所以在JDK5以后，int和Integer可以看作是同一个东西，因为在内部可以自动转化
 
-setTime 修改时间
-d.setTime(1000L);//从时间原点开始(1970/1/1)经过1000ms后的时间
+Integer的成员方法
+public static String toBinaryString(int i);//得到二进制
+public static String toOctalString(int i);//得到八进制
+public static String toHexString(int i);//得到十六进制
+public static int parseInt(String i);//将字符串类型的整数转成int类型的整数
 
-getTime 获取当前时间的毫秒值
-d.getTime();
-
-
-
-SimpleDateFormat
-把时间变成我们喜欢的格式
-把字符串表示的时间变成Date对象
-
-public SimpleDateFormat()		构造一个SimpleDateFormat，使用默认格式YYYY/MM/dd HH:mm:ss
-public SimpleDateFormat(String pattern)		构造一个SimpleDateFormat，使用指定的格式
-
-常用方法
-public final String format(Date date)		序列化(日期对象->字符串)
-public Date parse(String source)			反序列化（字符串->日期对象）
-年月日时分秒	Y M d H m s  星期：EE
-
-SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
-Date d = new Date();
-sdf.format(d).sout;
-
-JDK8新增的时间相关类
-与JDK7相比代码简单，对于日期对象的计算和比较不需要再转换成毫秒来计算，JDK7多线程环境下会导致数据安全问题，JDK8时间日期对象都是不可变的，解决了这个问题
+Arrays：操作数组的工具类
+常用方法：
+public static String toString(数组);//把数组拼接成一个字符串
+public static int binarySearch(数组，查找的元素)//二分查找法查找元素，
+注意，二分查找的前提，
+1.数组中的元素必须是有序的，数组中的元素必须是升序的
+2.如果要查找的元素是存在的，那么返回的是真实的索引，如果要查找的元素是不存在的，那么返回的是 - 插入点 -1
+public static int[] copyOf(原数组，新数组长度)//拷贝数组
+public static int[] copyOfRange(原数组，起始索引，结束索引)//拷贝数组（指定范围）
+public static void fill(数组，元素)//填充数组
+public static void sort(数组)//按照默认的方式会进行数组排序
+public static void sort(数组，排序规则)//按照指定的规则排序
+注意：1.只能给引用数据类型的数组进行排序
+2.如果数组是基本数据类型的，需要变成其对应的包装类
+//第二个参数是一个接口，所以我们在调用方法的时候，需要传递这个接口的实现类对象作为排序的规则，但是这个实现类只需要使用一次，没有必要单独写一个类，直接采取匿名内部类的方法
+Arrays.sort(arr,new Comparator<Integer>(){
+	@Override
+	public int compare(Integer o1,Integer o2){
+		return 0;
+	{
+})
