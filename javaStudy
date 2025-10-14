@@ -1,9 +1,25 @@
-## 线程池多大合适
-最大并行数：电脑中cpu最大的线程数量，如4核8线程就表示最大并行数是8
-cpu密集型：如果项目中计算比较多但是读取本地文件或者读取数据库的操作比较少，线程池取最大并行数+1
-IO密集型：如果项目进行IO操作比较多，线程池取最大并行数*期望cpu利用率*(总时间（cpu计算时间+等待时间）/cpu计算时间)
+//@Target() 标注注解的注解，叫做元注解，Target注解用来修饰@component注解可以出现的位置
+//ElementType.TYPE,ElementType.FIELD：@component注解可以出现在类上，可以出现在属性上
+//@Target(value = {ElementType.TYPE,ElementType.FIELD})
+//自定义注解
+//使用某个注解的时候，如果注解的属性名是value的话，value可以省略
+@Target({ElementType.TYPE,ElementType.FIELD})
+//@Retention,这也是一个元注解，用来标注component注解最终保留在class文件中，并且可以被反射机制读取
+@Retention(RetentionPolicy.RUNTIME)
+public @interface component {
 
-# 反射
-反射允许对封装的字段，方法和构造函数的信息进行编程访问，也就是说可以通过反射将类中的成员变量，成员方法，构造方法获取出来并对他们进行操作
-获取出来有什么用？
-IDEA中的代码提示就是使用的反射，获取你这个类中的所有成员方法
+//可以在注解中定义属性
+//String是属性类型，value是属性名
+String value();
+
+//String name();
+
+//数组属性
+//属性的类型是String[]
+//属性名是names
+//String[] names();
+
+}
+
+在其他地方使用component注解的时候也要实现这个注解中的属性
+@component(属性名 = 属性值/value = "abc")
