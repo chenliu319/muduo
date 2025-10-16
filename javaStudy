@@ -1,25 +1,18 @@
-//@Target() 标注注解的注解，叫做元注解，Target注解用来修饰@component注解可以出现的位置
-//ElementType.TYPE,ElementType.FIELD：@component注解可以出现在类上，可以出现在属性上
-//@Target(value = {ElementType.TYPE,ElementType.FIELD})
-//自定义注解
-//使用某个注解的时候，如果注解的属性名是value的话，value可以省略
-@Target({ElementType.TYPE,ElementType.FIELD})
-//@Retention,这也是一个元注解，用来标注component注解最终保留在class文件中，并且可以被反射机制读取
-@Retention(RetentionPolicy.RUNTIME)
-public @interface component {
+spring.xml
+如果要扫描多个包,使用逗号隔开
+<context:component-scan base-package="com.lin.spirng.bean,com.lin.spirng.dao"/>
 
-//可以在注解中定义属性
-//String是属性类型，value是属性名
-String value();
+//选择性实例化bean
+//如果在某个包下有很多bean，有的bean标注了controller，有的bean标注了service，有的bean标注了dao，我想只对标注了controller的 bean进行实例化，其他的都不实例化怎么实现
+//第一种解决方法
+		use-default-filters = false:如果这个属性是false，表示扫描的包下面所有声明Bean的注解全部失效
+<context:component-scan base-package="com.lin.spirng.bean,com.lin.spirng.dao" use-default-filters = "false">
+	想让controller注解生效
+	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</<context:component-scan>
 
-//String name();
-
-//数组属性
-//属性的类型是String[]
-//属性名是names
-//String[] names();
-
-}
-
-在其他地方使用component注解的时候也要实现这个注解中的属性
-@component(属性名 = 属性值/value = "abc")
+第二种解决方法,默认use-default-filters = "true"
+<context:component-scan base-package="com.lin.spirng.bean,com.lin.spirng.dao" use-default-filters = "true">
+	想让controller注解失效
+	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</<context:component-scan>
