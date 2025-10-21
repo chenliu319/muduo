@@ -1,18 +1,27 @@
-spring.xml
-如果要扫描多个包,使用逗号隔开
-<context:component-scan base-package="com.lin.spirng.bean,com.lin.spirng.dao"/>
-
-//选择性实例化bean
-//如果在某个包下有很多bean，有的bean标注了controller，有的bean标注了service，有的bean标注了dao，我想只对标注了controller的 bean进行实例化，其他的都不实例化怎么实现
-//第一种解决方法
-		use-default-filters = false:如果这个属性是false，表示扫描的包下面所有声明Bean的注解全部失效
-<context:component-scan base-package="com.lin.spirng.bean,com.lin.spirng.dao" use-default-filters = "false">
-	想让controller注解生效
-	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-</<context:component-scan>
-
-第二种解决方法,默认use-default-filters = "true"
-<context:component-scan base-package="com.lin.spirng.bean,com.lin.spirng.dao" use-default-filters = "true">
-	想让controller注解失效
-	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-</<context:component-scan>
+client客户端程序
+main(){
+	//创建目标对象
+	orderService target = new orderServiceImpl();
+	//创建代理对象
+	/*
+	1.newProxyInstance翻译为:新建代理对象，也就是说，通过调用这个方法可以创建代理对象
+		本质上这个Proxy.newProxyInstance()方法的执行，做了两件事
+		1.在内存中动态生成了一个代理类的字节和class
+		2.new对象了，通过内存中生成的代理类这个代码，实例化了代理对象
+	2.关于newProxyInstance()方法的三个参数，每一个什么含义，有什么用
+		ClassLoader loader 类加载器
+			这个类加载器有什么用
+			在内存当中动态生成的字节码也就是class文件，要执行也得先加载到内存中，加载类就需要类加载器，所以这里需要指定类加载器
+			并且JDK要求，目标类的类加载器要和代理类的类加载器一致，也就是说使用JDK的方式进行动态代理的话第一个参数要填目标对象的类加载器
+			
+		Class<?>[] interfaces 代理类要实现的接口
+			由于代理类和目标类要实现同一个接口或同一些接口，第二个参数就需要在内存中生成代理类的时候，告诉要实现哪些接口的
+		
+		InvocationHandler h 调用处理器
+			InvocationHandler 被翻译为：调用处理器，是一个接口，在调用处理器接口中编写的就是：增强代码
+			因为具体要增强什么代码，JDK动态代理技术他是不知道的
+			既然是一个接口就需要写接口的实例类
+	*/
+	Object proxyObj = Proxy.newProxyInstance(target.getClass().getClassLoader(),target.getClass().getInterfaces(),
+											);
+}
